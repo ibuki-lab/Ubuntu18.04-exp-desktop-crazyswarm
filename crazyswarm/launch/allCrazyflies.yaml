@@ -1,0 +1,240 @@
+# crazyflies:
+#   - id: 1
+#     channel: 70
+#     initialPosition: [1.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 2
+#     channel: 80
+#     initialPosition: [0.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 3
+#     channel: 90
+#     initialPosition: [-0.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   # - id: 3
+#   #   channel: 70
+#   #   initialPosition: [1.5, 1.5, 0.0]
+#   #   type: CF21SingleMarker
+#   - id: 4
+#     channel: 100
+#     initialPosition: [-1.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   # - id: 4
+#   #   channel: 70
+#   #   initialPosition: [0.5, 1.5, 0.0]
+#   #   type: CF21SingleMarker
+#   - id: 5
+#     channel: 70
+#     initialPosition: [1.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 6
+#     channel: 80
+#     initialPosition: [0.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 7
+#     channel: 90
+#     initialPosition: [-0.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   # - id: 7
+#   #   channel: 80
+#   #   initialPosition: [1.5, 0.75, 0.0]
+#   #   type: CF21SingleMarker
+#   - id: 8
+#     channel: 100
+#     initialPosition: [-1.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   # - id: 8
+#   #   channel: 80
+#   #   initialPosition: [0.5, 0.75, 0.0]
+#   #   type: CF21SingleMarker
+#   - id: 9
+#     channel: 70
+#     initialPosition: [1.5, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 10
+#     channel: 80
+#     initialPosition: [0.5,0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 11
+#     channel: 90
+#     initialPosition: [-0.5, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 12
+#     channel: 100
+#     initialPosition: [-1.5, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 13
+#     channel: 70
+#     initialPosition: [1.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 14
+#     channel: 80
+#     initialPosition: [0.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 15
+#     channel: 90
+#     initialPosition: [-0.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 16
+#     channel: 100
+#     initialPosition: [-1.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 17
+#     channel: 70
+#     initialPosition: [1.5, -1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 18
+#     channel: 80
+#     initialPosition: [0.5, -1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 19
+#     channel: 90
+#     initialPosition: [-0.5, -1.5, 0.0]
+#     type: CF21SingleMarker
+  # - id: 20
+  #   channel: 100
+  #   initialPosition: [-1.5, -1.5, 0.0]
+  #   type: CF21SingleMarker
+
+## flocking 専用
+# crazyflies:
+#   - id: 1
+#     channel: 70
+#     initialPosition: [1.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 2
+#     channel: 80
+#     initialPosition: [0.0, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 3
+#     channel: 90
+#     initialPosition: [-1.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 5
+#     channel: 70
+#     initialPosition: [1.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 6
+#     channel: 80
+#     initialPosition: [0.0, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 7
+#     channel: 90
+#     initialPosition: [-1.5, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 9
+#     channel: 70
+#     initialPosition: [1.5, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 10
+#     channel: 80
+#     initialPosition: [-1.5, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 11
+#     channel: 90
+#     initialPosition: [0.0, 0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 13
+#     channel: 70
+#     initialPosition: [1.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 14
+#     channel: 80
+#     initialPosition: [0.0, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 15
+#     channel: 90
+#     initialPosition: [-1.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 17
+#     channel: 70
+#     initialPosition: [1.5, -1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 18
+#     channel: 80
+#     initialPosition: [0.0, -1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 19
+#     channel: 90
+#     initialPosition: [-1.5, -1.5, 0.0]
+#     type: CF21SingleMarker
+# flocking2 10
+crazyflies:
+  - id: 1
+    channel: 70
+    initialPosition: [0.5, 1.5, 0.0]
+    type: CF21SingleMarker
+  - id: 2
+    channel: 80
+    initialPosition: [-0.5, 1.5, 0.0]
+    type: CF21SingleMarker
+  - id: 3
+    channel: 90
+    initialPosition: [1.0, 1.05, 0.0]
+    type: CF21SingleMarker
+  - id: 5
+    channel: 70
+    initialPosition: [-1.0, 1.05, 0.0]
+    type: CF21SingleMarker
+  - id: 6
+    channel: 80
+    initialPosition: [1.2, 0.3, 0.0]
+    type: CF21SingleMarker
+  - id: 7
+    channel: 90
+    initialPosition: [-1.2, 0.3, 0.0]
+    type: CF21SingleMarker
+  - id: 9
+    channel: 70
+    initialPosition: [1.0, -0.45, 0.0]
+    type: CF21SingleMarker
+  - id: 10
+    channel: 80
+    initialPosition: [-1.0, -0.45, 0.0]
+    type: CF21SingleMarker
+  - id: 13
+    channel: 70
+    initialPosition: [0.5, -0.9, 0.0]
+    type: CF21SingleMarker
+  - id: 15
+    channel: 90
+    initialPosition: [-0.5, -0.9, 0.0]
+    type: CF21SingleMarker
+  - id: 20
+    channel: 100
+    initialPosition: [-1.5, -1.5, 0.0]
+    type: large
+    # flocking3 8
+# crazyflies:
+#   - id: 1
+#     channel: 70
+#     initialPosition: [0.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 2
+#     channel: 80
+#     initialPosition: [-0.5, 1.5, 0.0]
+#     type: CF21SingleMarker
+#   - id: 3
+#     channel: 90
+#     initialPosition: [1.0, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 5
+#     channel: 70
+#     initialPosition: [-1.0, 0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 6
+#     channel: 80
+#     initialPosition: [1.0, -0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 7
+#     channel: 90
+#     initialPosition: [-1.0, -0.0, 0.0]
+#     type: CF21SingleMarker
+#   - id: 9
+#     channel: 70
+#     initialPosition: [0.5, -0.75, 0.0]
+#     type: CF21SingleMarker
+#   - id: 10
+#     channel: 80
+#     initialPosition: [-0.5, -0.75, 0.0]
+#     type: CF21SingleMarker

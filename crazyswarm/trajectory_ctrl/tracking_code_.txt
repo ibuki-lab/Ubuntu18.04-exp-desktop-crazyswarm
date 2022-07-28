@@ -1,0 +1,66 @@
+            for cf, child_frame in zip(self.allcfs.crazyflies, self.child_frames):
+                
+                # 原点と一つのcrazyflieとの座標変換を取得
+                try:
+                    f = self.tfBuffer.lookup_transform(self.world_frame, child_frame, rospy.Time(0))
+
+                # 取得できなかった場合は0.5秒間処理を停止し処理を再開する
+                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                    rospy.logerr('LookupTransform Error !')
+                    rospy.sleep(0.5)
+                    continue                
+                
+            # クオータニオン(四元数)の取得
+                self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
+            # オイラー角の取得
+                self.RPY = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
+            # 同次座標の取得
+                self.homogerous_matrixs = tf_conversions.transformations.quaternion_matrix(self.Quaternion) + np.array([[0, 0, 0, f.transform.translation.x],
+                                                                                                                        [0, 0, 0, f.transform.translation.y],
+                                                                                                                        [0, 0, 0, f.transform.translation.z],
+                                                                                                                        [0, 0, 0, 0]])
+            # 位置情報取得
+                X = f.transform.translation.x; Y = f.transform.translation.y; Z = f.transform.translation.z
+
+
+            # 追従する軌道の計算, 1周期10秒
+                A = 1.0 # 振幅
+                W = 2 * np.pi / T
+                X_desired = A*np.sin(W*t)
+                Xv_tra = A*W*np.cos(W*t)
+                Y_desired = 0*np.sin(W*t)
+                Yv_tra = 0*W*np.cos(W*t)
+                Z_desired = self.homogerous_matrixs[3, 3] # 二次元平面上の軌道追従を考えるから高さはそのまま
+
+            # 目標位置，姿勢の決定
+                pos_desired = np.array([X_desired, Y_desired, Z_desired])
+                yaw_desired = 0.0
+                vel_tra = (Xv_tra, Yv_tra)
+
+            # 速度計算
+                Xd = (self.homogerous_matrixs[0, 3] - pre_X)/dt
+                pre_X = self.homogerous_matrixs[0, 3]
+                Xdot_pre = 0.9 * Xd_pre + 0.1 * Xd
+                Xd_pre = Xd
+            # コントローラーに現在の位置，姿勢，目標の位置，姿勢，追従速度を渡す 速度指令値の更新
+                self.cmd_controller_output(pos_now=self.homogerous_matrixs[:3, 3], yaw_now=self.RPY[2], pos_des=pos_desired, yaw_des=yaw_desired, vel_tra=vel_tra)
+            
+                delta = 0
+                
+                # plot kernel tracking
+                # dataX = np.array([1, X, t, X_desired])
+                # for n in range(len(self.data_c)):
+                #     # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
+                #     delta += self.data_c[n] * np.matmul(dataX, np.array([1, self.data_x[n], self.data_t[n], np.sin(W * self.data_t[n])]))
+                # print("delta:{}".format(delta))
+                
+                # plot multiple tracking
+                for n in range(len(self.data_c)):
+                    # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
+                    delta = 0.0151 + 0.5405 * X + -0.0015 * t
+                print("delta:{}".format(delta))
+                
+                if t < 1:
+                    delta = 0
+
+                self.X_dot = 0.4 * (X_desired - f.transform.translation.x) + Xv_tra - delta
