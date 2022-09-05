@@ -130,9 +130,9 @@ class formation_ctrl(Vel_controller, Frames_setup):
                 
                                 
                 #網に接触しないようにする
-                cf_xy_state = self.cfs_state[i, :2]
-                if np.linalg.norm(cf_xy_state, ord=2) > 2.0:
-                    vel[i, :3] = self.V.safty_ctrl(cf_state_now=cf_xy_state, vel=vel[i, :3])
+                # cf_xy_state = self.cfs_state[i, :2]
+                # if np.linalg.norm(cf_xy_state, ord=2) > 2.0:
+                #     vel[i, :3] = self.V.safty_ctrl(cf_state_now=cf_xy_state, vel=vel[i, :3])
 
 
                 # crazyflieに速度指令を送る

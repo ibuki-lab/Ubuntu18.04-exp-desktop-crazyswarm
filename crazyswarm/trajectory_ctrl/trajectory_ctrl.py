@@ -139,20 +139,21 @@ class trajectory_controll(Frames_setup, Vel_controller):
             # コントローラーに現在の位置，姿勢，目標の位置，姿勢，追従速度を渡す 速度指令値の更新
                 self.cmd_controller_output(pos_now=self.homogerous_matrixs[:3, 3], yaw_now=self.RPY[2], pos_des=pos_desired, yaw_des=yaw_desired, vel_tra=vel_tra)
             
+            # 補正項計算
                 delta = 0
                 
                 # plot kernel tracking
-                # dataX = np.array([1, X, t, X_desired])
-                # for n in range(len(self.data_c)):
-                #     # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
-                #     delta += self.data_c[n] * np.matmul(dataX, np.array([1, self.data_x[n], self.data_t[n], np.sin(W * self.data_t[n])]))
-                # print("delta:{}".format(delta))
-                
-                # plot multiple tracking
+                dataX = np.array([1, X, t, X_desired])
                 for n in range(len(self.data_c)):
                     # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
-                    delta = 0.0151 + 0.5405 * X + -0.0015 * t
+                    delta += self.data_c[n] * np.matmul(dataX, np.array([1, self.data_x[n], self.data_t[n], np.sin(W * self.data_t[n])]))
                 print("delta:{}".format(delta))
+                
+                # plot multiple tracking
+                # for n in range(len(self.data_c)):
+                    # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
+                # delta = 0.02659 + 0.55268 * X + -0.002917 * t
+                # print("delta:{}".format(delta))
                 
                 if t < 1:
                     delta = 0

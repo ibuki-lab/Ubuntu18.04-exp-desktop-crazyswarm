@@ -131,8 +131,7 @@ class drones_coll_avoid(Frames_setup, Vel_controller):
                 # crazyflieに速度指令を送る
                 self.vel[:2] = self.vel[:2]*0.1
                 self.vel[2] += 0.01
-                cf.cmdVelocityWorld(vel=self.vel, 
-                                yawRate=0)
+                cf.cmdVelocityWorld(vel=self.vel, yawRate=0)
 
                 if time.time() - s_time < time_interval:
                     time.sleep(time_interval - (time.time() - s_time))

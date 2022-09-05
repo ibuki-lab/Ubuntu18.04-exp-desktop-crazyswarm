@@ -36,13 +36,13 @@ class const_value_control( Frames_setup, Vel_controller):
         self.data_c = np.array(data_c).ravel()
         # 訓練データX1を取得
         data_x = pd.read_csv('data_x.csv')
-        data_x = np.array(data_x)
+        self.data_x = np.array(data_x)
         #訓練データX2を取得
-        data_xdot = pd.read_csv('data_xdot.csv')
-        data_xdot = np.array(data_xdot)
+        # data_xdot = pd.read_csv('data_xdot.csv')
+        # data_xdot = np.array(data_xdot)
 
-        # 訓練データを結合
-        self.data_X = np.hstack((data_x, data_xdot))
+        # # 訓練データを結合
+        # self.data_X = np.hstack((data_x, data_xdot))
         # self.data_X = data_x
 
 
@@ -93,12 +93,12 @@ class const_value_control( Frames_setup, Vel_controller):
         sampling_T = 0.01
 
         X_prev = 0
-        self.t.append(0.0)
-        kp = 0.1
-        t = 0.0
+        kp = 0.4
         Zpre = 1.0
         t_pre = 0.0
         dt = 1
+        delta = 0
+        flag = False
         while True:
             # 各crazyflieに指令を送る, !!!!!!!!!! 子フレーム(cf?)と命令対象のcrazyflieが一致している事が絶対条件 !!!!!!!!
             for cf, child_frame in zip(self.allcfs.crazyflies, self.child_frames):
@@ -118,61 +118,66 @@ class const_value_control( Frames_setup, Vel_controller):
                 interval_start = time.time()
                 
                 # 位置取得
-                
                 X = f.transform.translation.x; Y = f.transform.translation.y; Z = f.transform.translation.z
                 ZD = (Z - Zpre)/dt
                 Zpre = Z
                 # state = np.array([X, Y, Z])
-                
-                # 着陸制御則
-                Zd = 1.0 - 0.1 * t
-                Z_dot = - 0.1
-                if time.time() - start_time > 10:
-                    Z_dot = -0.0
-                    Zd = 0.0
-                input_Z = Z_dot + kp * (Zd - Z)
+                if Z < 1.0 or flag:
+                    flag = True
+                    # 着陸制御則
+                    Zd = 1.0 - 0.1 * t
+                    Z_dot = - 0.1
+                    # if t > 9.64:
+                    #     Z_dot = -0.0
+                    #     Zd = 0.0
+                    #     input_Z = kp*(0.036-Z)
+                    if Z < 0.036:
+                        input_Z = -5
+                    else:
+                        input_Z = Z_dot + kp * (Zd - Z)
 
+                        
+
+                        if Z < 100:
+                        # # 学習後用 カーネル
+                            new_X = np.array([1, np.log(Z-0.035)**3, np.log(1.01 - Z)**3])
+                            # 誤差デルタを計算
+                            delta = 0
+                            for n in range(len(self.data_c)):
+                                # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
+                                # print(self.data_X[n, :])
+                                # print(self.data_X[n, :] - new_X)
+                                # ガウスカーネル
+                                # delta += self.data_c[n] * 15.60580919 * np.exp(-(np.linalg.norm(self.data_X[n, :] - new_X, ord=2)**2)/(1.397429139))
+                                # 対数カーネル
+                                #delta += self.data_c[n] * np.dot(new_X, np.array([1, self.data_x[n], np.log(self.data_x[n]/4.0)]))
+                                # delta += self.data_c[n] * np.dot(new_X, np.array([1, np.log(self.data_x[n])**3]))
+                                delta += self.data_c[n] * np.dot(new_X, np.array([1, np.log(self.data_x[n]-0.035)**3,  np.log(1.01 - self.data_x[n])**3]))
+
+
+                            # # 誤差項を補正する
+                            input_Z = input_Z - delta
                     
+                    # # 学習御用　重回帰
+                    # if Z < 1.0:
+                    #     delta = 0.0077*Z + 1.2079*ZD + 0.1076
+                    #     input_Z = input_Z - delta
+                    #     self.delta.append(delta)
 
-                # if Z < 1.0:
-                # # # 学習後用 ガウス過程回帰
-                #     new_X = np.array([Z, t])
-                #     # new_X = Z
-                #     # 誤差デルタを計算
-                #     delta = 0
-                #     for n in range(len(self.data_c)):
-                #         # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
-                #         # print(self.data_X[n, :])
-                #         # print(self.data_X[n, :] - new_X)
-                #         delta += self.data_c[n] * 15.60580919 * np.exp(-(np.linalg.norm(self.data_X[n, :] - new_X, ord=2)**2)/(1.397429139))
-                #     self.delta.append(delta)
-
-                #     # # 誤差項を補正する
-                #     input_Z = input_Z - delta
-
-                # # 学習御用　重回帰
-                if Z < 1.0:
-                    delta = 0.0077*Z + 1.2079*ZD + 0.1076
-                    input_Z = input_Z - delta
-                    self.delta.append(delta)
-
-                cf.cmdVelocityWorld(np.array([0.0, 0.0, input_Z]), 0.0)
-
-
-                # 三次元位置を記録
-                # self.position_X.append(X)
-                # self.position_Y.append(Y)
-                if Z < 1.0:
+                    cf.cmdVelocityWorld(np.array([0.0, 0.0, input_Z]), 0.0)
                     self.velocity_Zc.append(input_Z)
                     self.position_Z.append(Z)
                     self.t.append(t)
-                # self.velocity_Zc_learn.append(self.X_dot)
-                t = time.time() - start_time
-                dt = t - t_pre
-                t_pre = t
-                # print(f.transform.translation.z)
-                # PIDの微分項用にサンプリング時間を設定，サンプリング時間は0.001秒*エージェントの数　+ 実行時間幅(ここでは切り捨ててる)
-
+                    t = time.time() - Ts
+                    # self.delta.append(delta)
+                    # self.velocity_Zc_learn.append(self.X_dot)
+                    # t = time.time() - start_time
+                    # dt = t - t_pre
+                    # t_pre = t
+                else:
+                    cf.cmdVelocityWorld(np.array([0.0, 0.0, -0.01]), 0.0)
+                    Ts = time.time()
+                    t = 0
 
 
             # 実験時間が実験終了時間を過ぎたら機体を着陸させる
@@ -201,7 +206,7 @@ class const_value_control( Frames_setup, Vel_controller):
         #         "desX": self.pos_des[0], "desY": self.pos_des[1], "desZ": self.pos_des[2],
         #         "Vxc": self.velocity_Xc}
         # # print(len(self.t), len(self.position_X), len(self.velocity_Xc))
-        data = {"T": self.t[:-1], "X": self.position_Z, "Vc":self.velocity_Zc,"delta":self.delta}
+        data = {"T": self.t, "X": self.position_Z, "Vc":self.velocity_Zc}
         # data = {"T": self.t[:-1], "X": self.position_Z, "Vc":self.velocity_Zc}
 
         df = pd.DataFrame(data)

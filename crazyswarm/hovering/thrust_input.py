@@ -1,12 +1,14 @@
 #!/user/bin/env python
 # coding: UTF-8
 
+import sys
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
 import datetime
-
+import termios
+from timeout_decorator import timeout, TimeoutError
 # from ros_ws.src.crazyswarm.scripts.pycrazyswarm.crazyswarm import Crazyswarm
 from pycrazyswarm import *
 
@@ -23,13 +25,12 @@ from frames_setup import Frames_setup
 class const_value_control( Frames_setup):
 
     # このクラスの初期設定を行う関数
-    def __init__(self, experiment_time, hight_start):
+    def __init__(self):
         # frames_setup, vel_controller の初期化
         super(Frames_setup, self).__init__()
 
-    # 実行時間, 初期高度, 目標位置, 位置記録用リストの用意
-        self.exp_time = experiment_time
-        self.hight_start = hight_start
+    # 入力水力記録用リストの用意
+        self.pwm_register = []
 
     # crazyswamの関数を固定
         # Crazyswarm()の呼び出し
@@ -47,7 +48,26 @@ class const_value_control( Frames_setup):
         self.tfBuffer = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(self.tfBuffer)
         self.frames = []
+        time.sleep(0.5)
 
+    # 以下ではターミナルからの入力をEnterなしで実行するための設定変更
+        self.fd = sys.stdin.fileno()
+
+        self.old = termios.tcgetattr(self.fd)
+        self.new = termios.tcgetattr(self.fd)
+
+        self.new[3] &= ~termios.ICANON
+        self.new[3] &= ~termios.ECHO
+        
+    @staticmethod
+    def Vee(R):
+        vector = np.array([R[2, 1], R[0, 2], R[1, 0]])
+        return vector
+    
+    @timeout(0.3)
+    def input_with_timeout(self, msg=None):
+        termios.tcsetattr(self.fd, termios.TCSANOW, self.new)
+        return sys.stdin.read(1)
 
     # 各エージェントに指令値を送る関数
     def main(self):
@@ -55,16 +75,13 @@ class const_value_control( Frames_setup):
         # 実験開始
         print("Experiment Start!!")
         time.sleep(1)
-        start_time = time.time() # 開始時刻の取得，実験時間を測るため
-        sampling_T = 0.005
-
+        input_thrust = 0.0
         cf = self.allcfs.crazyflies[0]
         child_frame = self.child_frame
-
+        
         zero = np.array([0.0, 0.0, 0.0])
 
         while True:
-            t = time.time() - start_time
             # 原点と一つのcrazyflieとの座標変換を取得
             try:
                 f = self.tfBuffer.lookup_transform(self.world_frame, child_frame, rospy.Time(0))
@@ -75,46 +92,30 @@ class const_value_control( Frames_setup):
                 rospy.sleep(0.5)
                 continue
             
-            # 物理量設定
-            self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
-            self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
-            self.RPY = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
-
-            pwm = 0.1
-            Thrust = np.array([0.0, 0.0, max(0.0, min(0.5, pwm))])
-            cf.cmdFullState(pos=zero, vel=zero, acc=Thrust, yaw=0.0, omega=zero)
-
-
-            # ループ時間設定
-            self.interval(sampling_T, t)
-
-
-            # 実験時間が実験終了時間を過ぎたら機体を着陸させる
-            if time.time() - start_time > self.exp_time:
-
-                # 速度指令を送ってた後に着陸指令を送るときはこの関数を個々のcrazyflieに対し呼び出す必要がある
-                for cf in self.allcfs.crazyflies:
-                    cf.notifySetpointsStop(100)
-
-                # 着陸, targethightはプロペラ停止高度，durationは着陸にかける時間
-                self.allcfs.land(targetHeight=0.02, duration=4.0)
-                rospy.sleep(5) # 5秒停止
-                break
+            try:
+                input = self.input_with_timeout("key:")
+                if input == "w":
+                    input_thrust += 0.01
+                elif input == 'x':
+                    input_thrust -= 0.01
+                elif input == "c":
+                    break
+                else:
+                    input = "Noinput"
+            except TimeoutError:
+                input = "Noinput"
+            print(input_thrust*100)            
+            termios.tcsetattr(self.fd, termios.TCSANOW, self.old)
+            zero = np.array([0.0, 0.0, 0.0])
+            cf.cmdFullState(pos=zero, vel=zero, acc=np.array([0.0, -0.0, input_thrust]), yaw=0.0, omega=zero)
+            self.pwm_register.append(input_thrust*10000)
 
         print("experiment finish!!")
-        
-    def interval(self, sample_T, t):
-        if time.time() - t < sample_T:
-            time.sleep(sample_T - (time.time() - t))
-
-
+        data = {"input thrust": self.pwm_register}
+        df = pd.DataFrame(data)
+        df.to_csv("thrust_data_log{}".format(datetime.date.today()))
 
 if __name__ == '__main__':
-    # 初期位置の入力
-    experiment_time = int(input("実験時間:"))
-    hight_start = float(input("init_Z:"))
-    # position_destination = list((float(input("dest_X:")), float(input("dest_Y:")), float(input("dest_Z:"))))
-    
     # const_value_controlを初期化し，main関数を実行
-    const_value_control(experiment_time, hight_start).main()
+    const_value_control().main()
     exit()

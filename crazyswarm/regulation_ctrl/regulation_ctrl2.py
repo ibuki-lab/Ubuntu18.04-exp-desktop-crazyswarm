@@ -81,7 +81,7 @@ class const_value_control( Frames_setup, Vel_controller):
         
         # まず離陸させる，高さはclass呼び出し時に設定
         self.allcfs.takeoff(targetHeight=self.hight_start, duration=5.0)
-        rospy.sleep(5)  # 5秒静止
+        rospy.sleep(6)  # 6秒静止
 
         # 実験開始
         print("Experiment Start!!")
@@ -110,7 +110,6 @@ class const_value_control( Frames_setup, Vel_controller):
                 interval_start = time.time()
                 if time.time() - interval_start < sampling_T:
                     time.sleep(sampling_T - (time.time() - interval_start))
-                    print(1)
                 new_t = time.time() - start_time
                 
                 # クオータニオン(四元数)の取得
@@ -129,36 +128,35 @@ class const_value_control( Frames_setup, Vel_controller):
                 self.cmd_controller_output(pos_now=state, pos_des=np.array(self.pos_des), 
                                            yaw_now=0, yaw_des=0.0, dt=new_t - self.t[-1])
                 
-
-                v_now = (X - X_prev)/(new_t - self.t[-1])
-                X_dot = 0.9 * v_pre + 0.1 * v_now
-                new_X = np.array([X, X_dot])
+                # 微分で速度計算
+                # v_now = (X - X_prev)/(new_t - self.t[-1])
+                # X_dot = 0.9 * v_pre + 0.1 * v_now
+                # new_X = np.array([X, X_dot])
+                # # 次回計算用vとｘを記録
+                # v_pre = v_now
+                # X_prev = X
 
                 delta = 0
                 
                 # # plot gauss regulation
                 # for n in range(len(self.data_c)):
                 #     # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
-                #     delta += self.data_c[n] * np.exp(-100 * (X - self.data_x[n])**2)
+                #     delta += self.data_c[n] * np.exp(-10 * (Z - self.data_x[n])**2)
                 # print("delta:{}".format(delta))
                 
                 # plot poly regulation
-                for n in range(len(self.data_c)):
-                    # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
-                    delta += self.data_c[n] * (1 + X * self.data_x[n] + (X * self.data_x[n])**2 + (X * self.data_x[n])**3 + (X * self.data_x[n])**4 + (X * self.data_x[n])**5 + (X * self.data_x[n])**6)
-                print("delta:{}".format(delta))
+                # for n in range(len(self.data_c)):
+                #     # delta = c(i)          * e^{-||dataX(i) - newdataX(i)||^2}
+                #     delta += self.data_c[n] * (1 + Z * self.data_x[n] + (Z * self.data_x[n])**2 + (Z * self.data_x[n])**3 + (Z * self.data_x[n])**4 + (Z * self.data_x[n])**5 + (Z * self.data_x[n])**6 + (Z * self.data_x[n])**7 + (Z * self.data_x[n])**8)
+                # print("delta:{}".format(delta))
                 
+                # if Z > 1.5:
+                #     delta = 0
                 
-                # 次回計算用vとｘを記録
-                v_pre = v_now
-                X_prev = X
-                
-                if X > -0.1:
-                    delta = 0
-                # delta = 0
                 # # 誤差項を補正する
-                self.X_dot = -0.4*X + delta
-                cf.cmdVelocityWorld(np.array([self.X_dot, self.Y_dot, (0.01 + self.Z_dot)]), yawRate=self.yaw_dot)
+                # self.Z_dot = 0.4*(1.5 - Z) - delta
+
+                cf.cmdVelocityWorld(np.array([self.X_dot, self.Y_dot, self.Z_dot]), yawRate=self.yaw_dot)
                 # if time.time() - start_time > 3.0:
                 #     cf.cmdVelocityWorld(np.array([0.4, 0.0, 0.01]), 0.0)
                 #     self.velocity_Xc.append(0.4)
@@ -167,13 +165,13 @@ class const_value_control( Frames_setup, Vel_controller):
                 #     self.velocity_Xc.append(0.0)
                 # 三次元位置を記録
                 self.position_X.append(X)
-                # self.position_Y.append(Y)
+                self.position_Y.append(Y)
                 # self.position_Z.append(Z)
-                self.velocity_Xc.append(self.X_dot)
+                # self.velocity_Xc.append(self.Z_dot)
                 self.t.append(new_t)
-                self.Vdot.append(v_now)
-                self.Vdot_sl.append(X_dot)
-                self.deltas.append(delta)
+                # self.Vdot.append(v_now)
+                # self.Vdot_sl.append(X_dot)
+                # self.deltas.append(delta)
                 # print(f.transform.translation.z)
                 # PIDの微分項用にサンプリング時間を設定，サンプリング時間は0.001秒*エージェントの数　+ 実行時間幅(ここでは切り捨ててる)
 
@@ -204,7 +202,7 @@ class const_value_control( Frames_setup, Vel_controller):
         #         "desX": self.pos_des[0], "desY": self.pos_des[1], "desZ": self.pos_des[2],
         #         "Vxc": self.velocity_Xc}
         # # print(len(self.t), len(self.position_X), len(self.velocity_Xc))
-        data = {"T": self.t[:-1], "X": self.position_X, "Vc":self.velocity_Xc, "X_dot":self.Vdot, "X_dot_sl":self.Vdot_sl, "delta":self.deltas}
+        data = {"T": self.t[1:], "X": self.position_Z, "Vc":self.velocity_Xc, "X_dot":self.Vdot, "X_dot_sl":self.Vdot_sl, "delta":self.deltas}
 
         df = pd.DataFrame(data)
         df.to_csv("regulation_ctl_{}".format(datetime.date.today()))

@@ -63,8 +63,8 @@ class const_value_control( Frames_setup):
         child_frame = self.child_frame
         
         # 入力リスト
-        input_thrust = [0.0, 2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000, 22500, 25000]
-        input_thrust = input_thrust + sorted(input_thrust, revase=True)
+        input_thrust = [0.0, 2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000, 22500, 25000, 27500, 30000, 32500, 35000, 30000, 20000, 10000, 0.0]
+        input_thrust = input_thrust
         for input in input_thrust:
             Tzero = time.time() 
             while True:
@@ -79,14 +79,13 @@ class const_value_control( Frames_setup):
                     rospy.sleep(0.5)
                     continue
                 
-                print(input_thrust)            
-                termios.tcsetattr(self.fd, termios.TCSANOW, self.old)
+                print(input)            
                 zero = np.array([0.0, 0.0, 0.0])
 
-                cf.cmdFullState(pos=zero, vel=zero, acc=np.array([0.0, 0.0, input]), yaw=0.0, omega=zero)
-                self.pwm_register.append(input_thrust*1000.0)
+                cf.cmdFullState(pos=zero, vel=zero, acc=np.array([0.0, 0.0, input/10000.0]), yaw=0.0, omega=zero)
+                self.pwm_register.append(input)
                 
-                if Ts > 10.0:
+                if Ts > 5.0:
                     break
         print("experiment finish!!")
         data = {"input thrust": self.pwm_register}

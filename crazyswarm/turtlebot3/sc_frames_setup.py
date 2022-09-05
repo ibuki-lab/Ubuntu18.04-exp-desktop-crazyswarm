@@ -13,7 +13,7 @@ class Frames_setup(object):
         # エージェント座標の定義
         self.children_frame = []
         # turtlebot3座標の定義
-        self.turtle_frame = "turtlebot3/base_link"
+        self.turtle_frame = "turtlebot3_1/base_link"
  
         # crazyflies.yamlに登録されているcrazyflieのidを取得
         with open("/home/user/crazyswarm/ros_ws/src/crazyswarm/launch/crazyflies.yaml", 'r') as ymlfile:

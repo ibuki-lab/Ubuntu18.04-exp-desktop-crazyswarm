@@ -11,7 +11,7 @@
       # Logging configuration (Use enable_logging to actually enable logging)
       genericLogTopics: ["log1"]
       genericLogTopicFrequencies: [10]
-      #genericLogTopic_log1_Variables: ["ctrlthrust.cmd_thrust","ctrlthrust.cmd_roll","ctrlthrust.cmd_pitch", "ctrlthrust.cmd_yaw"]
+      genericLogTopic_log1_Variables: ["motor.m1","motor.m2","motor.m3", "motor.m4"]
       # firmware parameters for all drones (use crazyflieTypes.yaml to set per type, or
       # allCrazyflies.yaml to set per drone)
       firmwareParams:
@@ -19,7 +19,7 @@
           enHighLevel: 1
         stabilizer:
           estimator: 2 # 1: complementary, 2: kalman
-          controller: 5 # 1: PID, 2: mellinger, 3:INDI, 4:Taeyon Lee, 5:rpyt # 必ず確認すること
+          controller: 1 # 1: PID, 2: mellinger, 3:INDI, 4:rpyt, 5:Hover, 6:attitudeClover # 必ず確認すること
         ring:
           effect: 16 # 6: double spinner, 7: solid color, 16: packetRate
           solidBlue: 255 # if set to solid color
